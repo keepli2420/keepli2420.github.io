@@ -1,0 +1,94 @@
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+ .wrappingBlock10 {
+  width: 10%;
+  display: inline-block;
+  padding: 5px;
+  vertical-align: top;
+}
+ .wrappingBlock20 {
+  width: 20%;
+  display: inline-block;
+  padding: 5px;
+  vertical-align: top;
+}
+ .wrappingBlock30 {
+  width: 30%;
+  display: inline-block;
+  padding: 5px;
+  vertical-align: top;
+}
+.wrappingBlock40 {
+  width: 40%;
+  display: inline-block;
+  padding: 5px;
+  vertical-align: top;
+}
+.wrappingBlock45 {
+  width: 45%;
+  display: inline-block;
+  padding: 5px;
+  vertical-align: top;
+}
+
+.wrappingBlock {
+  width: 50%;
+  display: inline-block;
+  padding: 5px;
+  vertical-align: top;
+}
+
+.wrappingBlock55 {
+  width: 55%;
+  display: inline-block;
+  padding: 5px;
+  vertical-align: top;
+}
+
+.wrappingBlock60 {
+  width: 60%;
+  display: inline-block;
+  padding: 5px;
+  vertical-align: top;
+}
+
+.wrappingBlock70 {
+  width: 70%;
+  display: inline-block;
+  padding: 5px;
+  vertical-align: top;
+}
+.wrappingBlock80 {
+  width: 80%;
+  display: inline-block;
+  padding: 5px;
+  vertical-align: top;
+}
+.wrappingBlock90 {
+  width: 90%;
+  display: inline-block;
+  padding: 5px;
+  vertical-align: top;
+}
+
+.wrappingBlock code[class^='codeBlockLines'] {
+  white-space: pre-wrap;
+}
+
+
+[data-theme='light'] .themedDocusaurus [fill='#FFFF50'] {
+  fill: red;
+}
+
+[data-theme='dark'] .themedDocusaurus [fill='#FFFF50'] {
+  fill: blue;
+}
+
+[data-theme='light'] img[src$='#gh-dark-mode-only'],
+[data-theme='dark'] img[src$='#gh-light-mode-only'] {
+  display: none;
+}
