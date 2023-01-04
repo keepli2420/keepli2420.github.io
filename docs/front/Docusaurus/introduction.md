@@ -1,6 +1,6 @@
 ---
 description: Docusaurus 自设计之初的目标就是易于安装且运行快速。
-custom_edit_url: null
+
 hide_table_of_contents: true
 ---
 
