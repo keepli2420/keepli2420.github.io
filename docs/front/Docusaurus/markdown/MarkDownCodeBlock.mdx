@@ -1,0 +1,310 @@
+---
+description: 文档中的代码块超级厉害 💪。
+custom_edit_url: null
+---
+
+# 代码块
+
+
+import BrowserWindow from "@site/src/components/BrowserWindow";{/* 组件样式 */}
+{/* 引用本地样式 */}
+import styles from "@site/src/css/markdown-features-react.module.css";
+import Tabs from '@theme/Tabs';{/* 选项卡 */}
+import TabItem from '@theme/TabItem';
+
+
+## 代码标题
+你可以在语言后添加 title（记得在语言和 title 之间加一个空格）来设置标题。
+
+<BrowserWindow>
+<div className={styles.wrappingBlock55}>
+
+````jsx
+```jsx title="/src/components/HelloCodeTitle.js"
+function HelloCodeTitle(props) {
+  return <h1>你好，{props.name}</h1>;
+}
+```
+`````
+</div>
+<div className={styles.wrappingBlock45}>
+
+```jsx title="/src/components/HelloCodeTitle.js"
+function HelloCodeTitle(props) {
+  return <h1>你好，{props.name}</h1>;
+}
+```
+</div>
+</BrowserWindow>
+
+## 语法高亮
+代码块是使用 3 个反引号包裹的文本块。 你可以参阅 MDX 的规范。
+
+
+```java
+if (responseEntity.getStatusCode().is2xxSuccessful()) {
+    Object body = responseEntity.getBody();
+    log.info("请求的返回值为：{}", body);
+    try {
+        String resultValue = jsonMapper.writeValueAsString(body);
+        Result result = jsonMapper.readValue(resultValue, Result.class);
+        return result;
+    } catch (JsonProcessingException e) {
+        log.info("请求无返回值");
+        return Result.success(body);
+    }
+} else {
+    log.error("请求失败，返回的结果：{}", responseEntity);
+    throw new BusinessException(ResultEnum.FAILURE.getCode(), "请求失败");
+}
+
+```
+
+## 语法高亮
+代码块是使用 3(4) 个反引号包裹的文本块。你可以参阅 [MDX](https://github.com/mdx-js/specification) 的规范。
+````js
+console.log('每个仓库都应该有个吉祥物。');
+````
+在代码块中使用相应语言的标签，Docusaurus 会自动用 
+[Prism React Renderer](https://github.com/FormidableLabs/prism-react-renderer) 选择相应的语法高亮。
+
+## 高亮主题
+我们默认使用的语法高亮主题是 
+[Palenight](https://github.com/FormidableLabs/prism-react-renderer/blob/master/src/themes/palenight.js) 。
+你可以通过 docusaurus.config.js 中的 `themeConfig.prism` 的 `theme` 字段来更改主题。
+
+举个例子，如果你喜欢 dracula 高亮主题：
+
+```jsx
+module.exports = {
+  themeConfig: {
+    prism: {
+      theme: require('prism-react-renderer/themes/dracula'),
+    },
+  },
+};
+```
+因为每个 Prism 主题都只是一个 JS 对象，所以如果你对默认值不满意，也可以写一个自己的主题。 
+Docusaurus 自己就增强了 `github` 和 `vsDark` 主题来提供更丰富的高亮，你可以看看我们亮色和暗色代码主题的实现。
+
+## 支持的语言
+默认情况下，Docusaurus 自带部分常用语言的支持。
+
+:::caution 注意
+一些流行语言，包括 Java、C#、PHP 在内，默认未启用。
+要添加其他 [Prism 所支持的语言](https://prismjs.com/#supported-languages)的代码高亮，请定义在 additionalLanguages 列表中。
+```js
+prism: {
+  theme: lightCodeTheme,
+  darkTheme: darkCodeTheme,
+  additionalLanguages: ['java','yaml'],
+}
+```
+添加 additionalLanguages 后，重启 Docusaurus。
+:::
+
+
+## 行高亮
+### 用注释实现行高亮
+您可以使用带有 `highlight-next-line`、`highlight-start` 和 `highlight-end` 的注释来选择要突出显示的行。
+
+
+
+<BrowserWindow>
+<div className={styles.wrappingBlock}>
+
+`````bash
+```js
+function HighlightSomeText(highlight) {
+  if (highlight) {
+    // highlight-next-line
+    return '这行被高亮了！';
+  }
+  return '这里不会';
+}
+
+function HighlightMoreText(highlight) {
+  // highlight-start
+  if (highlight) {
+    return '这块被高亮了！';
+  }
+  // highlight-end
+  return '这里不会';
+}
+```
+`````
+</div>
+
+
+<div className={styles.wrappingBlock}>
+
+````js
+
+function HighlightSomeText(highlight) {
+  if (highlight) {
+    // highlight-next-line
+    return '这行被高亮了！';
+  }
+  return '这里不会';
+}
+
+function HighlightMoreText(highlight) {
+  // highlight-start
+  if (highlight) {
+    return '这块被高亮了！';
+  }
+  // highlight-end
+  return '这里不会';
+}
+
+````
+</div>
+
+</BrowserWindow>
+
+### 用元数据字符串实现高亮
+
+<BrowserWindow>
+<div className={styles.wrappingBlock}>
+
+````jsx
+```jsx {1,4-6,11}
+import React from 'react';
+
+function MyComponent(props) {
+  if (props.isBar) {
+    return <div>Bar</div>;
+  }
+
+  return <div>Foo</div>;
+}
+
+export default MyComponent;
+```
+````
+</div>
+
+<div className={styles.wrappingBlock}>
+
+```jsx {2,5-7,12} 
+
+import React from 'react';
+
+function MyComponent(props) {
+  if (props.isBar) {
+    return <div>Bar</div>;
+  }
+
+  return <div>Foo</div>;
+}
+
+export default MyComponent;
+```
+</div>
+
+</BrowserWindow>
+
+
+## 行号
+你可以通过在元字符串中添加 `showLineNumbers` 来为你的代码块启用行号（别忘了在这个键前面加一个空格）。
+<BrowserWindow>
+<div className={styles.wrappingBlock55}>
+
+````jsx
+```jsx showLineNumbers
+function HelloCodeTitle(props) {
+  return <h1>你好，{props.name}</h1>;
+}
+```
+````
+</div>
+
+<div className={styles.wrappingBlock45}>
+
+```jsx  showLineNumbers 
+function HelloCodeTitle(props) {
+  return <h1>你好，{props.name}</h1>;
+}
+```
+</div>
+</BrowserWindow>
+
+
+## 交互式代码编辑器
+
+你可以通过 `@docusaurus/theme-live-codeblock` 插件创建可交互的代码编辑器， 首先，在站点中添加这个插件。
+<Tabs>
+
+  <TabItem value="npm" label="npm">
+
+    npm install --save @docusaurus/theme-live-codeblock 
+  </TabItem>
+  <TabItem value="yarn" label="yarn" >
+
+    yarn add @docusaurus/theme-live-codeblock  
+  </TabItem>
+</Tabs>
+
+你还需要把插件添加到 `docusaurus.config.js` 中。
+```jsx
+module.exports = {
+  // ...
+  themes: ['@docusaurus/theme-live-codeblock'],
+  // ...
+};
+```
+
+要使用此插件，只需要创建一个代码块，同时在语言元标签中加上 `live`。
+
+````js
+```jsx live
+function Clock(props) {
+  const [date, setDate] = useState(new Date());
+  useEffect(() => {
+    const timerID = setInterval(() => tick(), 1000);
+
+    return function cleanup() {
+      clearInterval(timerID);
+    };
+  });
+
+  function tick() {
+    setDate(new Date());
+  }
+
+  return (
+    <div>
+      <h2>现在是 {date.toLocaleTimeString()}。</h2>
+    </div>
+  );
+}
+```
+````
+
+<BrowserWindow>
+
+```jsx live
+function Clock(props) {
+  const [date, setDate] = useState(new Date());
+  useEffect(() => {
+    const timerID = setInterval(() => tick(), 1000);
+
+    return function cleanup() {
+      clearInterval(timerID);
+    };
+  });
+
+  function tick() {
+    setDate(new Date());
+  }
+
+  return (
+    <div>
+      <h2>现在是 {date.toLocaleTimeString()}。</h2>
+    </div>
+  );
+}
+```
+
+</BrowserWindow>
+

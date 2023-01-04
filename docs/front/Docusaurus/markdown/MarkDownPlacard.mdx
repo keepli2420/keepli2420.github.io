@@ -1,0 +1,131 @@
+---
+description: 除了基本的 Markdown 语法， 我们还有一种特殊的告示语法。它用 3 个连续的冒号包裹文本，然后紧跟着一个表示其类型的文本标签。
+custom_edit_url: null
+---
+
+import Tabs from '@theme/Tabs';{/* 选项卡 */}
+import TabItem from '@theme/TabItem';
+{/* 引用本地样式 */}
+import styles from '@site/src/css/markdown-features-react.module.css';
+{/* 组件样式 */}
+import BrowserWindow from "@site/src/components/BrowserWindow";
+
+# 告示
+除了基本的 Markdown 语法， 我们还有一种特殊的告示语法。它用 3 个连续的冒号包裹文本，然后紧跟着一个表示其类型的文本标签。
+
+
+## 基本示例
+<details>
+<summary>示例</summary>
+<div className={styles.wrappingBlock45}>
+
+```mdx
+:::note
+Some **content** with 
+_Markdown_ `syntax`. 看看[这个 `api`](#)
+:::  
+
+
+:::tip
+Some **content** with 
+_Markdown_ `syntax`. 看看[这个 `api`](#)
+:::  
+
+
+:::info
+Some **content** with 
+_Markdown_ `syntax`. 看看[这个 `api`](#)
+:::  
+
+
+:::caution
+Some **content** with 
+_Markdown_ `syntax`. 看看[这个 `api`](#)
+:::  
+
+
+:::danger
+Some **content** with 
+_Markdown_ `syntax`. 看看[这个 `api`](#)
+:::  
+```
+</div>
+
+<div className={styles.wrappingBlock55}>
+
+:::note
+
+Some **content** with _Markdown_ `syntax`. 看看[这个 `api`](#)。
+
+:::  
+
+:::tip
+
+Some **content** with _Markdown_ `syntax`. 看看[这个 `api`](#)。
+
+:::  
+
+:::info
+
+Some **content** with _Markdown_ `syntax`. 看看[这个 `api`](#)。
+
+:::  
+
+:::caution
+
+Some **content** with _Markdown_ `syntax`. 看看[这个 `api`](#)。
+
+:::  
+
+:::danger
+
+Some **content** with _Markdown_ `syntax`. 看看[这个 `api`](#)。
+
+:::  
+</div>
+</details>
+
+## 指定标题
+
+<div className={styles.wrappingBlock}>
+
+```mdx
+:::note Your Title
+Some **content** with _Markdown_ `syntax`.
+:::
+```
+</div>
+<div className={styles.wrappingBlock}>
+
+:::note Your Title
+
+Some **content** with _Markdown_ `syntax`.
+
+:::
+
+</div>
+
+## JSX 中的用法
+在非 Markdown 的文件里，你可以使用 @theme/Admonition 组件来达到相同的效果。
+
+它接受的 type prop 和上文一致：note、tip、danger、info、caution。 
+你也可以选择性地以 JSX 元素或者字符串的形式指定一个图标或者一个标题：
+
+
+```jsx title="MyReactPage.jsx"
+import Admonition from '@theme/Admonition';
+
+<Admonition type="tip" icon="💡" title="你知道吗……">
+  <p>
+    使用插件为你项目中最常用的 JSX 元素引入较短的语法。
+  </p>
+</Admonition>
+```
+
+import Admonition from '@theme/Admonition';
+
+<Admonition type="tip" icon="💡" title="你知道吗……">
+  <p>
+    使用插件为你项目中最常用的 JSX 元素引入较短的语法。
+  </p>
+</Admonition>

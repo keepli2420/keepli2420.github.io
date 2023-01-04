@@ -1,0 +1,102 @@
+---
+description: 你可以在代码块中使用 Mermaid 来渲染图表。
+custom_edit_url: null
+---
+
+import Tabs from '@theme/Tabs';{/* 选项卡 */}
+import TabItem from '@theme/TabItem';
+
+# Diagrams
+
+## 安装流程
+
+````mdx-code-block
+<Tabs>
+<TabItem value="apple" label="苹果" default>
+
+```bash
+npm install --save @docusaurus/theme-mermaid
+```
+</TabItem>
+<TabItem value="orange" label="橙子">
+
+```bash npm2yarn
+yarn add @docusaurus/theme-mermaid
+```
+</TabItem>
+</Tabs>
+`````
+
+在你的配置文件 `docusaurus.config.js` 中，  
+添加一个插件 `@docusaurus/theme-mermaid` 并将 `markdown.mermaid` 字段设置为 `true`，以启用 Mermaid 的功能
+
+
+```js title="docusaurus.config.js"
+module.exports = {
+  markdown: {
+    mermaid: true,
+  },
+  themes: ['@docusaurus/theme-mermaid'],
+};
+
+```
+
+## 用法
+添加一个高亮语法为 `mermaid` 的代码块：
+
+````md title="Example Mermaid diagram"
+```mermaid
+graph TD;
+    A-->B;
+    A-->C;
+    B-->D;
+    C-->D;
+```
+````
+
+
+```mermaid
+graph TD;
+A-->B;
+A-->C;
+B-->D;
+C-->D;
+```
+
+关于使用 Mermaid 语法的更多信息，请参阅 [Mermaid 语法文档](https://mermaid.js.org/.html)。
+
+## 高亮主题
+你可以在你的配置文件 `docusaurus.config.js` 中，
+设置 `themeConfig` 字段下的 `mermaid.theme`的值，来改变图表的暗色或者亮色主题。 
+你可以同时为亮色和暗色模式指定图表的主题。
+
+```js title="docusaurus.config.js"
+module.exports = {
+  themeConfig: {
+    mermaid: {
+      theme: {light: 'neutral', dark: 'forest'},
+    },
+  },
+};
+```
+
+参阅 Mermaid 主题文档 以了解更多关于 
+[Mermaid 图表主题](https://mermaid.js.org/config/theming.html)设置的信息。
+
+## Mermaid 配置
+Options in `mermaid.options` will be passed directly to `mermaid.initialize`:
+
+```js title="docusaurus.config.js"
+module.exports = {
+  themeConfig: {
+    mermaid: {
+      options: {
+        maxTextSize: 50,
+      },
+    },
+  },
+};
+```
+
+参阅 [Mermaid 配置文档](https://mermaid.js.org/config/configuration.html)
+以了解有哪些配置选项可以使用。

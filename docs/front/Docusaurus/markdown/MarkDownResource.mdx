@@ -1,0 +1,199 @@
+---
+custom_edit_url: null
+description: 有时候你需要在 Markdown 文件中直接链接静态资源（比如 docx 文件、图片，等等）。把它放在和 Markdown 文件所在的相同目录会比较方便。
+---
+
+import BrowserWindow from "@site/src/components/BrowserWindow";{/* 组件样式 */}
+{/* 引用本地样式 */}
+import styles from "@site/src/css/markdown-features-react.module.css";
+import Tabs from '@theme/Tabs';{/* 选项卡 */}
+import TabItem from '@theme/TabItem';
+import bannerImage from '@site/static/img/docusaurus-asset-example-banner.png';
+import DocusaurusSvg from '@site/static/img/docusaurus.svg';
+
+
+# 资源
+有时候你需要在 Markdown 文件中直接链接静态资源（比如 docx 文件、图片，等等）。
+把它放在和 Markdown 文件所在的相同目录会比较方便。
+
+## 图像
+你可以用三种不同的方式展示图像：Markdown 语法、CJS require、ES import 语法。
+
+````mdx-code-block  
+<Tabs>
+<TabItem value="MarkDown" label="MarkDown语法" default>
+
+用简单的 `Markdown` 语法显示图像：
+```md
+![示例横幅](./assets/docusaurus-asset-example-banner.png)
+```
+</TabItem>
+
+<TabItem value="require" label="CommonJS require" >
+
+用 JSX img 标签及行内 CommonJS `require` 显示图像：
+
+```jsx
+<img
+  src={require('./assets/docusaurus-asset-example-banner.png').default}
+  alt="示例横幅"
+/>
+```
+</TabItem>
+
+
+<TabItem value="import" label="import 语句" >
+
+用 JSX img 标签和 ES `import` 语法显示图像：
+
+```jsx
+import myImageUrl from './assets/docusaurus-asset-example-banner.png';
+
+<img src={myImageUrl} alt="示例横幅" />;
+```
+</TabItem>
+
+</Tabs>
+````
+
+上述所有方法最后都会显示这样的图像：
+
+<BrowserWindow>
+
+![banner](@site/static/img/docusaurus-asset-example-banner.png)
+</BrowserWindow>
+
+## 样式设置
+MDX 并不和 CommonMark 百分百兼容。 你可以用 [MDX 实时编辑器](https://mdx-git-renovate-babel-monorepo-mdx.vercel.app/playground/)来确保你的文本是合法的 MDX 语法。
+
+```jsx
+
+<img src={bannerImage} alt="image-20210726122825225" style={{width: '20em'}}/>
+
+<img src={require('@site/static/img/docusaurus-asset-example-banner.png').default} style={{width: '20em'}} /> 
+```
+
+<img src={bannerImage} alt="image-20210726122825225" 
+style={{width: '45%', display: 'inline-block','vertical-align': 'top', 'padding': '2%'}}/>
+
+<img src={require('@site/static/img/docusaurus-asset-example-banner.png').default} 
+style={{width: '45%', display: 'inline-block','vertical-align': 'top', 'padding': '2%'}} /> 
+
+
+## 文件
+同样地， 你可以通过 `require` 链接到已有的资源，然后把 `require` 返回的 `URL` 用于 video、a 链接等地方。
+
+```MDX
+<a target="\_blank" href={require('./a.html').default}> 下载这个 docx </a>
+
+或者
+
+[在 Markdown 里下载这个 docx](./assets/docusaurus-asset-example.docx)
+```
+<BrowserWindow>
+<a target="\_blank" href={require('./example.docx').default}> 下载这个 docx </a>
+
+[在 Markdown 里下载这个 docx](./example.docx)
+
+</BrowserWindow>
+
+
+:::tip
+如果你使用了 Markdown 图像或链接语法，所有的资源路径都会被解析为文件路径，
+并自动转换为 require() 调用。 你一般不需要在 Markdown 中使用 require()，
+除非你使用了 JSX 语法——这时候就确实需要你自己处理了。
+:::
+
+## 内联SVG
+
+<DocusaurusSvg />
+
+这在你需要通过 CSS 调整 SVG 图片中的某些部分时会很有用。 举个例子，你可以基于当前主题更改 SVG 的颜色。
+```jsx
+import DocusaurusSvg from './docusaurus.svg';
+<DocusaurusSvg className="themedDocusaurus" />;
+```
+
+```css
+[data-theme='light'] .themedDocusaurus [fill='#FFFF50'] {
+  fill: red;
+}
+
+[data-theme='dark'] .themedDocusaurus [fill='#FFFF50'] {
+  fill: seagreen;
+}
+```
+
+<DocusaurusSvg className={styles.themedDocusaurus} />
+
+
+## 主题化图像
+Docusaurus 支持主题化图像：主题自带的 `ThemedImage` 组件允许你根据当前主题切换图像源。
+```js
+import ThemedImage from '@theme/ThemedImage';
+
+<ThemedImage
+  alt="Docusaurus 主题化图像"
+  sources={{
+    light: '/img/docusaurus_light.svg',
+    dark: '/img/docusaurus.svg',
+  }}
+/>;
+```
+
+import ThemedImage from '@theme/ThemedImage';
+
+<ThemedImage
+  alt="Docusaurus 主题化图像"
+  sources={{
+    light: '/img/docusaurus_light.svg',
+    dark: '/img/docusaurus.svg',
+  }}
+/>  
+
+
+###  GitHub 式的主题图像
+GitHub 有它自己的[图像主题化方法](https://github.blog/changelog/2021-11-24-specify-theme-context-for-images-in-markdown/)，
+是通过路径片段实现的，你可以轻松地自行实现。
+
+要使用路径片段切换图片是否可见（GitHub 用的是 `#gh-dark-mode-only` 和 `#gh-light-mode-only`），
+你需要添加以下内容到你的自定义 CSS（如果你不想和 GitHub 相耦合，你也可以用你自己的路径后缀）：
+
+
+```css title="src/css/custom.css"
+[data-theme='light'] img[src$='#gh-dark-mode-only'],
+[data-theme='dark'] img[src$='#gh-light-mode-only'] {
+  display: none;
+}
+```
+```md
+![Docusaurus 主题图像](/img/docusaurus_light.svg#gh-light-mode-only)
+![Docusaurus 主题图像](/img/docusaurus.svg#gh-dark-mode-only)
+```
+
+<BrowserWindow>
+
+![Docusaurus 主题图像](/img/docusaurus_keytar.svg#gh-light-mode-only)![Docusaurus 主题图像](/img/docusaurus_speed.svg#gh-dark-mode-only)
+
+</BrowserWindow>
+
+## 静态资源
+如果 Markdown 链接或图像使用了绝对路径， 这条路径将被视为一个文件路径，并将从静态目录下解析。 
+比如如果你把静态目录配置为 ['public', 'static']，那么对于以下图像：
+
+```md title="my-doc.md"
+![来自静态目录的图像](/img/docusaurus.png)
+```
+
+Docusaurus 将尝试在 `static/img/docusaurus.png` 和 `public/img/docusaurus.png` 两个地方查找它。 
+链接将随后被转换为 require() 调用，而不是继续作为 URL。 这么做有两个好处：
+1. 你不必操心 base URL，因为 Docusaurus 会在打包资产时考虑到这一点；
+2. 图像会进入 Webpack 的构建系统，在文件名后多一个散列化的后缀，有助于让浏览器积极缓存图像，提高网站的性能。
+
+如果你原意就是写 URL，你可以用 pathname:// 协议来禁用自动资源链接的行为。
+
+```md
+![横幅](pathname:///img/docusaurus-asset-example-banner.png)
+```
+
+这个链接会被生成为 `<img src="/img/docusaurus-asset-example-banner.png" alt="banner" />`，不会做任何处理，也不会检查文件是否存在。

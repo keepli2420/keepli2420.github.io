@@ -1,0 +1,172 @@
+---
+custom_edit_url: null
+description: Docusaurus提供了 <Tabs> 组件，你可以通过 MDX 在 Markdown 中使用：
+---
+
+import Tabs from '@theme/Tabs';{/* 选项卡 */}
+import TabItem from '@theme/TabItem';
+{/* 引用本地样式 */}
+import styles from '@site/src/css/markdown-features-react.module.css';
+{/* 组件样式 */}
+import BrowserWindow from "@site/src/components/BrowserWindow";
+
+import tabstyles from '@site/src/css/docusurus-tabs.module.css'
+
+# 选项卡
+
+Docusaurus提供了 `<Tabs>` 组件，你可以通过 MDX 在 Markdown 中使用：
+
+<BrowserWindow>
+<div className={styles.wrappingBlock70}>
+
+```jsx
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+<Tabs>
+  <TabItem value="apple" label="苹果" default>
+    这是个苹果 🍎
+  </TabItem>
+  <TabItem value="orange" label="橙子">
+    这是个橙子 🍊
+  </TabItem>
+  <TabItem value="banana" label="香蕉">
+    这是个香蕉 🍌
+  </TabItem>
+</Tabs>
+```
+</div>
+
+<div className={styles.wrappingBlock30} style={{color:'red'}}>
+
+<Tabs>
+  <TabItem value="apple" label="苹果" default>
+    这是个苹果 🍎
+  </TabItem>
+  <TabItem value="orange" label="橙子">
+    这是个橙子 🍊
+  </TabItem>
+  <TabItem value="banana" label="香蕉">
+    这是个香蕉 🍌
+  </TabItem>
+</Tabs>
+</div>
+</BrowserWindow>
+
+## 显示默认选项卡
+
+<details>
+<summary>Tabs 的 props 优先于 TabItem 的 props：</summary>
+你可以把 values 和 defaultValue props 提供给 Tabs：
+
+```jsx
+<Tabs
+  defaultValue="orange"
+  values={[
+    {label: '苹果 1', value: 'apple'},
+    {label: '橙子 1', value: 'orange'},
+    {label: '香蕉 1', value: 'banana'},
+  ]}>
+  <TabItem value="apple" label="苹果 2">
+    这是个苹果 🍎
+  </TabItem>
+  <TabItem value="orange" label="橙子 2">
+    这是个橙子 🍊
+  </TabItem>
+  <TabItem value="banana" label="香蕉 2" default>
+    这是个香蕉 🍌
+  </TabItem>
+</Tabs>
+```
+<Tabs
+  defaultValue="orange"
+  values={[
+    {label: '苹果 1', value: 'apple'},
+    {label: '橙子 1', value: 'orange'},
+    {label: '香蕉 1', value: 'banana'},
+  ]}>
+  <TabItem value="apple" label="苹果 2">
+    这是个苹果 🍎
+  </TabItem>
+  <TabItem value="orange" label="橙子 2">
+    这是个橙子 🍊
+  </TabItem>
+  <TabItem value="banana" label="香蕉 2" default>
+    这是个香蕉 🍌
+  </TabItem>
+</Tabs>
+</details>
+
+
+## 同步选项
+
+你可能想要在同类选项卡之间进行同步。 比如，你可能会给 macOS 和 Windows 的用户提供不同的说明，
+并且你想要点击一次就可以同时切换所有操作系统相关的说明选项。 要做到这一点，你可以给所有相关标签提供相同的 groupId prop。 
+这会把用户的选择存储在 localStorage 中，而所有 groupId 相同的 `<Tab>` 实例都会在其中一个的值发生变化时自动更新。 
+要注意 groupId 的命名是全局共享的。
+
+<div className={styles.wrappingBlock70}>
+
+```jsx
+<Tabs groupId="operating-systems">
+  <TabItem value="win" label="Windows">用 Ctrl + C 复制。</TabItem>
+  <TabItem value="mac" label="macOS">用 Command + C 复制。</TabItem>
+</Tabs>
+
+<Tabs groupId="operating-systems">
+  <TabItem value="win" label="Windows">用 Ctrl + V 粘贴。</TabItem>
+  <TabItem value="mac" label="macOS">用 Command + V 粘贴。</TabItem>
+</Tabs>
+```
+</div>
+
+<div className={styles.wrappingBlock30}>
+
+<Tabs groupId="operating-systems">
+  <TabItem value="win" label="Windows" >用 Ctrl + C 复制。</TabItem>
+  <TabItem value="mac" label="macOS">用 Command + C 复制。</TabItem>
+</Tabs>
+
+<Tabs groupId="operating-systems">
+  <TabItem value="win" label="Windows">用 Ctrl + V 粘贴。</TabItem>
+  <TabItem value="mac" label="macOS">用 Command + V 粘贴。</TabItem>
+</Tabs>
+
+</div>
+
+## 自定义选项卡外观
+你可能想要自定义某组选项卡的外观。 你可以给 className prop 赋值，指定的 CSS class 会被添加到对应的 Tabs 组件：
+
+<div className={styles.wrappingBlock80}>
+
+```jsx
+<Tabs>
+  <TabItem value="apple" label="苹果" attributes={{className: tabstyles.red}}>
+    这是个苹果 🍎
+  </TabItem>
+  <TabItem value="orange" label="橙子" attributes={{className: tabstyles.orange}}>
+    这是个橙子 🍊
+  </TabItem>
+  <TabItem value="banana" label="香蕉" attributes={{className: tabstyles.yellow}}>
+    这是个香蕉 🍌
+  </TabItem>
+</Tabs>
+```
+
+</div>
+
+<div className={styles.wrappingBlock20}>
+
+<Tabs>
+  <TabItem value="apple" label="苹果" attributes={{className: tabstyles.red}}>
+    这是个苹果 🍎
+  </TabItem>
+  <TabItem value="orange" label="橙子" attributes={{className: tabstyles.orange}}>
+    这是个橙子 🍊
+  </TabItem>
+  <TabItem value="banana" label="香蕉" attributes={{className: tabstyles.yellow}}>
+    这是个香蕉 🍌
+  </TabItem>
+</Tabs>
+
+</div>

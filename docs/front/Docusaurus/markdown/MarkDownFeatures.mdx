@@ -1,0 +1,532 @@
+---
+description: MD、MDX 和 React特性
+custom_edit_url: null
+---
+
+import Tabs from "@theme/Tabs";{/* 选项卡 */}
+import TabItem from "@theme/TabItem"; 
+{/* 导入代码块 */}
+import CodeBlock from "@theme/CodeBlock";
+import MyComponentSource from "!!raw-loader!../js/myComponent";
+{/* 组件样式 */}
+import BrowserWindow from "@site/src/components/BrowserWindow";
+{/* 引用本地样式 */}
+import styles from "@site/src/css/markdown-features-react.module.css";
+{/* 套用模板 */}
+import Template1 from '../template/_markdown-template-example.mdx';
+
+
+# MDX 和 React
+
+### 标准功能
+
+**粗体** _斜体_ [链接](MarkDownFeatures#标准功能)
+
+> Markdown 引文有着漂亮的样式
+>
+> 引文
+
+```bash
+![图片 alt 文本](/img/docusaurus.png)
+```
+
+![docusaurus](/img/docusaurus.png)
+
+### 前言
+
+你可以用前言 (front matter) 来给你的 Markdown 文件添加元数据。 所有内容插件都有自己可接受的前言规范，并使用前言来丰富元数据，因为后者不能从内容或其他配置中完美地推断。
+
+前言是在文件的最顶端给出的，两端由三个横线 --- 包围。 内容会按 YAML 解析。
+
+常用配置
+
+### 详情内容
+
+Markdown 可以嵌入 HTML 元素。HTML 的 details 元素会拥有漂亮的样式：
+
+<details>
+  <summary>点我看看！</summary>
+  <p>这不是真的</p>
+  <details>
+    <summary>再试一次！</summary>
+    <p>你真棒！😲😲😲😲😲</p>
+  </details>
+</details>
+
+### 在 Markdown 中使用 JSX
+
+Docusaurus 原生支持 MDX v1，可以直接在 Markdown 文档中编写 JSX，并渲染为 React 组件。
+
+:::note 备注
+虽然 Docusaurus 会把 .md 和 .mdx 都解析为 MDX，但第三方工具可能会对其中一些语法的处理略有不同。 为了得到最准确的解析结果和更好的编辑器支持，推荐包含 MDX 语法的文档使用 .mdx 后缀。
+:::
+可以读读 [MDX](https://mdxjs.com/docs/) 的文档，看看 MDX 还能做哪些更神奇的事。
+
+### 导出组件
+
+要在 MDX 文件中自定义组件，你必须导出它：只有以 export 开头的段落才会被解析为组件，而不是文本。
+
+
+
+<Tabs>
+<TabItem value="代码" lable="代码" default>
+
+```bash
+export const Highlight = ({children, color}) => (
+  <span
+    style={{
+      backgroundColor: color,
+      borderRadius: '2px',
+      color: '#fff',
+      padding: '0.2rem',
+    }}>
+    {children}
+  </span>
+);
+
+<Highlight color="#25c2a0">Docusaurus 绿</Highlight> 和 <Highlight color="#1877F2">Facebook 蓝</Highlight> 是我最喜欢的颜色。
+我可以把我的 _JSX_ 和 **Markdown** 写在一起！
+```
+
+</TabItem>
+<TabItem value="结果" lable="结果">
+
+export const Highlight = ({ children, color }) => (
+  <span
+    style={{
+      backgroundColor: color,
+      borderRadius: "2px",
+      color: "#fff",
+      padding: "0.2rem",
+    }}
+  >
+    {children}
+  </span>
+);
+
+<Highlight color="#25c2a0">Docusaurus 绿</Highlight> 和 <Highlight color="#1877F2">Facebook 蓝</Highlight> 是我最喜欢的颜色。
+我可以把我的 _JSX_ 和 **Markdown** 写在一起！   
+</TabItem>
+</Tabs>
+
+:::caution 注意
+
+```bash
+/* 不要这么写： */
+<span style="background-color: red">Foo</span>
+/* 要这么写： */
+<span style={{backgroundColor: 'red'}}>Foo</span>
+```
+
+MDX 并不和 CommonMark 百分百兼容。 你可以用 [MDX 实时编辑器](https://mdx-git-renovate-babel-monorepo-mdx.vercel.app/playground/)来确保你的文本是合法的 MDX 语法。
+:::
+
+对于简单的情况，在 Markdown 中直接声明组件非常方便，但由于编辑器的支持有限，有解析错误的风险，以及可复用性低，这种做法长期来看很难维护。 当你的组件涉及复杂的 JS 逻辑时，最好开一个单独的 .js 文件：
+
+<Tabs>
+<TabItem value="js" default>
+
+```js title="src/components/Highlight.js"
+import React from "react";
+export default function Highlight({ children, color }) {
+  return (
+    <span
+      style={{
+        backgroundColor: color,
+        borderRadius: "2px",
+        color: "#fff",
+        padding: "0.2rem",
+      }}
+    >
+      {children}
+    </span>
+  );
+}
+```
+
+</TabItem>
+<TabItem value="引用">
+
+```mdx title="markdown-file.js"
+import Highlight from "@site/src/components/Highlight";
+
+<Highlight color="#25c2a0">Docusaurus 绿</Highlight>
+```
+
+</TabItem>
+
+<TabItem value="结果">
+
+<Highlight color="#25c2a0">Docusaurus 绿</Highlight>
+
+</TabItem>
+</Tabs>
+
+### 导入组件
+
+你也可以导入其它目录中的组件，或者导入通过 npm 安装的第三方库提供的组件！
+
+```bash
+<!-- Docusaurus 主题组件 -->
+import TOCInline from '@theme/TOCInline';
+<!-- 外部组件 -->
+import Button from '@mui/material/Button';
+<!-- 自定义组件 -->
+import BrowserWindow from '@site/src/components/BrowserWindow';
+
+```
+
+:::tip 提示
+提示
+@site 别名指向你的网站目录，通常这是 docusaurus.config.js 文件所在的那个目录。 如果用别名代替相对路径 ('../src/components/BrowserWindow')，你就不需要在移动文件、版本化文档，和翻译文档时，更新所有的导入路径。
+:::
+
+### MDX 组件作用域
+
+除了**导入组件**和**导出组件**，第三种在 MDX 中使用组件的方式是把它注册到**全局作用域**，这样它将自动在每个 MDX 文件中可用，无需任何导入声明。
+
+```bash title="src/theme/MDXComponents.js"
+import React from 'react';
+// 导入原映射
+
+export default {
+  // 复用默认的映射
+  ...MDXComponents,
+  // 把 "highlight" 标签映射到我们的 <Highlight /> 组件！
+  // `Highlight` 会收到在 MDX 中被传递给 `highlight` 的所有 props
+  highlight: Highlight,
+};
+
+```
+
+```js
+我可以随时随地用 <highlight color="#25c2a0">Docusaurus 绿</highlight>了！
+```
+
+我可以随时随地用 <highlight color="#25c2a0">Docusaurus 绿</highlight>了！
+
+### Markdown 和 JSX 的交互
+
+Docusaurus v2 用的是 MDX v1，存在很多已知的解析失败的情况，会导致 Markdown 无法被正确识别。 你可以用 [MDX 实时编辑器](https://mdx-git-renovate-babel-monorepo-mdx.vercel.app/playground/)来确保你的文本是合法的 MDX 语法。
+
+<details>
+<summary>解析失败的例子</summary>
+
+1.  一个以 JSX 标签开头的段落会被完全视为 JSX 字符串：
+
+<Tabs>
+<TabItem value="问题" lable="问题" default >
+<div className={styles.wrappingBlock}>
+
+```bash
+<span style={{color: 'red'}}>高亮文本</span> 但之后_Markdown_ 就**无法工作**了
+```
+
+</div>
+<div className={styles.wrappingBlock}>
+<BrowserWindow>
+<span style={{ color: 'red' }}>高亮文本</span> 但之后 _Markdown_ 就**无法工作**了
+
+</BrowserWindow>
+</div>
+</TabItem>
+<TabItem value="解决方案" lable="解决方案">
+<div className={styles.wrappingBlock}>
+  
+这一行都用 JSX，或者在这一行开头放一点纯文本：
+
+```bash
+<span style={{color: 'red'}}>这一段全部用 JSX</span> 就不用<i>操心</i> <b>Markdown</b> 的问题了
+&#8203;<span style={{color: 'red'}}>← 这是个零宽空格</span> 然后在这之后 <i>Markdown</i> <b>就可以工作了</b>
+```
+
+</div>
+<div className={styles.wrappingBlock}>
+<BrowserWindow>
+<span style={{ color: "red" }}>这一段全部用 JSX</span> 就不用<i>操心</i> <b>
+  Markdown
+</b> 的问题了
+<br />
+<br />
+&#8203;<span style={{color: 'red'}}>← 这是个零宽空格</span> 然后在这之后 <i>Markdown</i> <b>就可以工作了</b>
+</BrowserWindow>
+</div>
+</TabItem>
+</Tabs>
+
+2.  JSX 标签里的 Markdown 永远不会工作：
+
+<Tabs>
+<TabItem value="问题" lable="问题" default >
+<div className={styles.wrappingBlock}>
+
+```bash
+<span style={{color: 'red'}}>**粗体不起作用**</span>
+```
+
+</div>
+<div className={styles.wrappingBlock}>
+<BrowserWindow>
+<span style={{color: 'red'}}>**粗体不起作用**</span>
+</BrowserWindow>
+</div>
+</TabItem>
+<TabItem value="解决方案" lable="解决方案">
+
+<div className={styles.wrappingBlock}>
+  
+在 JSX 标签里用 JSX，或者把 Markdown 放到外层去：
+
+```bash
+<span style={{color: 'red'}}><b>粗体现在起作用了</b></span>
+
+**<span style={{color: 'red'}}>粗体现在起作用了</span>**
+```
+
+</div>
+<div className={styles.wrappingBlock}>
+<br/>
+<BrowserWindow>
+<span style={{color: 'red'}}><b>粗体现在起作用了</b></span>
+
+**<span style={{color: 'red'}}>粗体现在起作用了</span>**
+
+</BrowserWindow>
+</div>
+</TabItem>
+</Tabs>
+
+3.  在一个 JSX 标签正下方的文本会被当作 JSX 文本：
+
+<Tabs>
+<TabItem value="问题" lable="问题" default >
+<div className={styles.wrappingBlock}>
+
+```bash
+<div style={{color: 'red'}}>
+**粗体还是不起作用**
+</div>
+```
+
+</div>
+<div className={styles.wrappingBlock}>
+<BrowserWindow>
+<div style={{color: 'red'}}>
+**粗体还是不起作用**
+</div>
+</BrowserWindow>
+</div>
+</TabItem>
+<TabItem value="解决方案" lable="解决方案">
+
+<div className={styles.wrappingBlock}>
+  
+加一个空行：
+
+```bash
+<div style={{color: 'red'}}>
+
+**粗体现在起作用了**
+
+</div>
+```
+
+</div>
+<div className={styles.wrappingBlock}>
+<br/>
+<BrowserWindow>
+<div style={{color: 'red'}}>
+
+**粗体现在起作用了**
+
+</div>
+</BrowserWindow>
+</div>
+</TabItem>
+</Tabs>
+
+4.  被缩进四格的 Markdown 文本会被当作代码块：
+
+<Tabs>
+<TabItem value="问题" lable="问题" default >
+<div className={styles.wrappingBlock}>
+
+```bash
+<div style={{color: 'red'}}>
+
+    You may think I'm just some text...
+
+</div>
+```
+</div>
+<div className={styles.wrappingBlock}>
+<BrowserWindow>
+<div style={{color: 'red'}}>
+
+    You may think I'm just some text...
+
+</div>
+</BrowserWindow>
+</div>
+</TabItem>
+<TabItem value="解决方案" lable="解决方案">
+
+<div className={styles.wrappingBlock}>
+  
+不要缩进：
+
+```bash
+<div style={{color: 'red'}}>
+
+现在我真的只是文本了
+
+</div>
+```
+
+</div>
+<div className={styles.wrappingBlock}>
+<br/>
+<BrowserWindow>
+<div style={{color: 'red'}}>
+
+现在我真的只是文本了
+
+</div>
+</BrowserWindow>
+</div>
+</TabItem>
+</Tabs>
+
+</details>
+
+### 导入代码片段
+
+<Tabs>
+<TabItem value="npm" lable="npm" default >
+
+```bash
+npm install --save raw-loader
+```
+
+</TabItem>
+
+<TabItem value="yarn" lable="yarn" default >
+
+```bash
+yarn add raw-loader
+```
+
+</TabItem>
+</Tabs>
+
+这时你就可以从文件中原样导入代码了：
+
+<details>
+<summary>
+开始导入
+</summary>
+
+```bash
+import CodeBlock from '@theme/CodeBlock';
+import MyComponentSource from '!!raw-loader!./myComponent';
+
+<CodeBlock language="jsx">{MyComponentSource}</CodeBlock>
+```
+
+<details>
+<summary>查看导入代码</summary>
+<CodeBlock language="jsx">{MyComponentSource}</CodeBlock>
+</details>
+</details>
+
+
+
+:::note 备注
+
+要注意的是，显示导入的代码必须使用 `<CodeBlock>` 组件，
+不能用 Markdown 的 ` ``` ` 语法，因为后者不会对表达式求值，
+而是原样显示传给它的内容，而使用 JSX 的形式可以对导入进来的变量进行求值并展示。
+:::
+
+
+### 导入Markdown
+你可以把 Markdown 文档当作 React 组件，在其它 Markdown 文件或 React 组件中导入。
+按照惯例，使用 `_` **作为文件名前缀**的文档不会生成页面，而是会被作为**「片段」(partial)** 来让其它文件导入。
+
+<div>
+<div className={styles.wrappingBlock}>
+
+```bash title="_markdown-template-example.mdx"
+<span>你好 {props.name}</span>
+
+这是一些来自 `_markdown-partial-example.mdx` 的内容。
+```
+</div>
+<div className={styles.wrappingBlock}>
+
+```bash title="someOtherDoc.mdx"
+import Template1 from './_markdown-template-example.mdx';
+
+<Template1 name="Sebastien" />
+```
+</div>
+
+
+<BrowserWindow>
+<Template1 name="Sebastien"/>
+
+</BrowserWindow>
+<p>这样，你可以在多个文档中复用内容，避免重复。</p>
+
+:::caution 注意
+由于技术限制。目前，导入的内容中的 Markdown 小标题不会被包含在目录中。
+:::
+
+</div>
+
+
+### 全局导出项
+
+在 MDX 文档中，下面这些变量是全局可用的：
+* frontMatter：Markdown 文档的前言，包含字符串键和对应的值；
+* toc：目录，作为一个标题列表。 这个变量的实际用法可以参考内联目录。
+* contentTitle：Markdown 文档标题，即文档中的第一个 h1 标题。 如果没有则是 undefined，例如把标题定义在了文档的 title 前言中。
+
+<BrowserWindow>
+
+```bash
+import TOCInline from '@theme/TOCInline';
+import CodeBlock from '@theme/CodeBlock';
+
+<p>这一页的标题是： <b>{contentTitle}</b></p>
+
+这一页的前言：
+
+<ul>
+  {Object.entries(frontMatter).map(([key, value]) => <li key={key}><b>{key}</b>: {value}</li>)}
+</ul>
+
+这一页的目录，经过序列化：
+
+<CodeBlock className="language-json">{JSON.stringify(toc, null, 2)}</CodeBlock>
+
+```
+
+<p>这一页的标题是： <b>{contentTitle}</b></p>
+
+<p>这一页的前言：</p>
+<ul>
+{
+  Object.entries(frontMatter).map(([k,v])=><li key = {k}> <b>{k}: </b>{v}</li>)
+} 
+
+
+
+</ul>
+
+<p>这一页的目录，经过序列化：</p>
+<CodeBlock>{JSON.stringify(toc,null,2)}</CodeBlock>
+
+</BrowserWindow>
+
+
