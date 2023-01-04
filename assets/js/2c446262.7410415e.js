@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunknotes=self.webpackChunknotes||[]).push([[7797],{6402:s=>{s.exports=JSON.parse('{"label":"collection","permalink":"/docs/tags/collection","allTagsPath":"/docs/tags","count":1,"items":[{"id":"front/docusaurusIndex","title":"\u76ee\u5f55\u6982\u89c8","description":"","permalink":"/docs/front/docusaurusIndex"}]}')}}]);

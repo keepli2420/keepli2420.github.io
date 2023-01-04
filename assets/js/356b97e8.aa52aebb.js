@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunknotes=self.webpackChunknotes||[]).push([[4986],{3911:s=>{s.exports=JSON.parse('{"title":"\u76ee\u5f55\u96c6\u5408","description":"\u4ecb\u7ecd","slug":"/front","permalink":"/docs/front","navigation":{"next":{"title":"Docusaurus","permalink":"/docs/front/Docusaurus"}}}')}}]);

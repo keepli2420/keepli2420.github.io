@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunknotes=self.webpackChunknotes||[]).push([[4121],{8070:e=>{e.exports=JSON.parse('[{"label":"collection","permalink":"/docs/tags/collection","count":1}]')}}]);
