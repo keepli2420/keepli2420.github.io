@@ -1,18 +1,19 @@
+````mdx-code-block
 <Tabs>
-<TabItem value="" lable="" default >
+<TabItem value="npm" label="npm" default>
 
 ```bash
-
+npm run build
 ```
 </TabItem>
+<TabItem value="yarn" label="yarn">
 
-<TabItem value="" lable=""  >
-
-```bash
-
+```bash npm2yarn
+yarn run build
 ```
 </TabItem>
 </Tabs>
+`````
 
 
 高亮
@@ -21,3 +22,16 @@
 // highlight-start
 
 // highlight-end
+
+
+详情
+<details>
+  <summary>点我看看！</summary>
+  <p>这不是真的</p>
+  <details>
+    <summary>再试一次！</summary>
+    <p>你真棒！😲😲😲😲😲</p>
+  </details>
+</details>
+
+告示  danger  note  tip  info  caution 

@@ -69,8 +69,9 @@ const sidebars = {
                 'front/Docusaurus/markdown/MarkDownResource',
                 'front/Docusaurus/markdown/MarkDownDiagrams',
                 
-              ]
-            }
+              ],
+            },
+            'front/Docusaurus/deployment',
             
           ]
         }
