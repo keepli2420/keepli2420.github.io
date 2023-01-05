@@ -69,7 +69,7 @@ const config = {
       algolia: {
         appId:'56QXJ33EVP',
         apiKey:'de01c722ff2f069de16bfb04f11b6652',
-        indexName:'local',
+        indexName:'local', 
         // 可选：见下文
         contextualSearch: true,
 
@@ -169,15 +169,7 @@ const config = {
   },
 
   plugins: [
-    [
-      '@docusaurus/plugin-sitemap',
-      {
-        changefreq: 'daily',
-        priority: 0.5,
-        ignorePatterns: ['/tags/**'],
-        filename: 'sitemap.xml',
-      },
-    ],
+    
   ],
 };
 
