@@ -53,7 +53,9 @@ const config = {
           customCss: require.resolve("./src/css/custom.css"),
         },
       }),
+      
     ],
+
   ],
   themes: [
     "@docusaurus/theme-live-codeblock",
@@ -67,12 +69,12 @@ const config = {
       algolia: {
         appId:'496TLNXQJB',
         apiKey:'fd3b3d8267da0b537546e9633f88f9a3',
-        indexName:'local',
+        indexName:'github',
         // 可选：见下文
         contextualSearch: true,
 
       // 可选：声明哪些域名需要用 window.location 型的导航而不是 history.push。 适用于 Algolia 配置会爬取多个文档站点，而我们想要用 window.location.href 在它们之间跳转时。
-      externalUrlRegex: 'external\\.com|domain\\.com',
+      // externalUrlRegex: 'external\\.com|domain\\.com',
 
       // 可选：Algolia 搜索参数
       searchParameters: {},
@@ -165,6 +167,18 @@ const config = {
   markdown: {
     mermaid: true,
   },
+
+  plugins: [
+    [
+      '@docusaurus/plugin-sitemap',
+      {
+        changefreq: 'daily',
+        priority: 0.5,
+        ignorePatterns: ['/tags/**'],
+        filename: 'sitemap.xml',
+      },
+    ],
+  ],
 };
 
 module.exports = config;
