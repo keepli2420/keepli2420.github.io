@@ -169,7 +169,7 @@ const config = {
   },
 
   plugins: [
-    
+         
   ],
 };
 
