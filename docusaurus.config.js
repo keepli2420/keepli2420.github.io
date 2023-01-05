@@ -67,9 +67,9 @@ const config = {
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
       algolia: {
-        appId:'496TLNXQJB',
-        apiKey:'fd3b3d8267da0b537546e9633f88f9a3',
-        indexName:'github',
+        appId:'56QXJ33EVP',
+        apiKey:'de01c722ff2f069de16bfb04f11b6652',
+        indexName:'local',
         // 可选：见下文
         contextualSearch: true,
 
