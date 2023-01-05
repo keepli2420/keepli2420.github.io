@@ -31,6 +31,7 @@ jobs:
           algolia-app-id: 56QXJ33EVP
           algolia-api-key: 8fa7d991b44b16f77cf59de5203a9b0f
           site-url: 'https://keepli2420.github.io/'
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
 
 
