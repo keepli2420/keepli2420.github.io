@@ -22,18 +22,6 @@ jobs:
         run: npm ci
       - name: Build website
         run: npm run build
-      - name: Algolia crawler creation and crawl
-        uses: algolia/algoliasearch-crawler-github-actions@v1.0.10
-        id: algolia_crawler
-        with: # mandatory parameters
-          crawler-user-id: 6db1c111-253a-4f9c-8125-3c33c908d16f
-          crawler-api-key: 3f697fca00bafaff594bb9f160823e3f
-          algolia-app-id: 56QXJ33EVP
-          algolia-api-key: 8fa7d991b44b16f77cf59de5203a9b0f
-          site-url: 'https://keepli2420.github.io/'
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-
-
 
       # Popular action to deploy to GitHub Pages:
       # Docs: https://github.com/peaceiris/actions-gh-pages#%EF%B8%8F-docusaurus

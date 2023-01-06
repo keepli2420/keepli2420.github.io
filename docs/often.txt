@@ -13,7 +13,7 @@ yarn run build
 ```
 </TabItem>
 </Tabs>
-`````
+````
 
 
 高亮
@@ -35,3 +35,18 @@ yarn run build
 </details>
 
 告示  danger  note  tip  info  caution 
+
+
+
+```mdx-code-block
+import CrowdinConfigV2 from '!!raw-loader!@site/crowdin-v2.yaml';
+import CodeBlock from '@theme/CodeBlock';
+
+<CodeBlock className="language-yaml" title="crowdin.yml">
+  {CrowdinConfigV2.split('\n')
+    // 删除注释
+    .map((line) => !line.startsWith('#') && line)
+    .filter(Boolean)
+    .join('\n')}
+</CodeBlock>
+```

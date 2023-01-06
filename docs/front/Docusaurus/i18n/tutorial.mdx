@@ -1,0 +1,291 @@
+---
+description: i18n - 教程
+custom_edit_url: null
+title: 教程
+---
+import Tabs from '@theme/Tabs';{/* 选项卡 */}
+import TabItem from '@theme/TabItem';
+
+
+# i18n - 教程
+本教程将为你阐述 Docusaurus i18n 系统的基础。
+
+我们将为新建的英文 Docusaurus 站点添加简体中文翻译。
+
+首先，用 `npx create-docusaurus@latest website classic` 来创建新站点。
+
+## 配置你的站点
+编辑 `docusaurus.config.js`，添加对简体中文语言的 i18n 支持。
+
+### 站点配置
+
+Use the site [i18n configuration](#) to declare the i18n locales:
+
+```jsx title="docusaurus.config.js"
+module.exports = {
+  i18n: {
+    defaultLocale: 'en',
+    locales: ['en', 'zh-Hans', 'fa'],
+    localeConfigs: {
+      en: {
+        htmlLang: 'en-GB',
+      },
+      // 如果你不需要覆盖默认值，你可以忽略这个语言（比如 zh-Hans）
+      fa: {
+        direction: 'rtl',
+      },
+    },
+  },
+};
+```
+语言名称会被用于翻译文件的位置以及你的本地化网站的 base URL。 构建所有语言时，只有默认语言才会在 base URL 中省略它的名字。
+
+Docusaurus 会用语言名称提供合理默认值：`<html lang="...">` 属性、语言标签、日历格式等。 你可以用 localeConfigs 自定义这些默认值。
+
+
+### 主题配置
+添加 `localeDropdown` 类型的导航栏下拉框，让用户选择语言：
+
+```jsx
+module.exports = {
+  themeConfig: {
+    navbar: {
+      items: [
+        {
+          type: 'localeDropdown',
+          position: 'left',
+        },
+      ],
+    },
+  },
+};
+
+```
+### 启动网站
+使用你所选择的语言，以开发模式启动本地化站点：
+
+````mdx-code-block
+<Tabs>
+<TabItem value="npm" label="npm" default>
+
+```bash
+npm run start -- --locale zh-Hans
+```
+</TabItem>
+<TabItem value="yarn" label="yarn">
+
+```bash npm2yarn
+yarn run start -- --locale zh-Hans
+```
+</TabItem>
+</Tabs>
+````
+
+你的站点可以在 [http://localhost:3000/zh-Hans/](http://localhost:3000/zh-Hans/) 访问了。
+
+我们还没有添加任何译文，所以网站的大部分内容都没有被翻译。
+
+:::tip 提示
+Docusaurus 会为「下一页」「上一页」等通用主题标签提供默认翻译。
+
+请帮助我们完善这些[默认译文](https://github.com/facebook/docusaurus/tree/main/packages/docusaurus-theme-translations/locales)。
+:::
+
+
+:::caution 注意
+每个语言版本都是一个独立的单页应用程序：不能同时启动所有语言的 Docusaurus 站点。
+:::
+
+
+## 翻译你的站点
+所有简体中文的翻译数据都存放在 `website/i18n/zh-Hans` 处。 每个插件会在它自己的对应文件夹下寻找翻译内容，
+而 `code.json` 文件定义了 React 代码中使用的所有文本标签。
+
+:::note 备注
+复制文件后，请用 npm run start -- --locale zh-Hans 重新启动站点。 热加载功能在编辑已有的文件时会有更好的表现。
+:::
+
+### 翻译 React 代码
+For any React code you've written yourself: React pages, React components, etc., you will use the translation APIs.
+
+在你的 React 代码中找到所有用户可见的文本标签，用翻译 API 标记它们。 API 有两种：
+* The `<Translate>` component wraps a string as a JSX element;
+* `translate()` 函数接受一条文本，返回一个字符串。
+
+使用在上下文中更符合语义的那个 API。 比如，`<Translate>` 可以作为 React children，而对于那些接受字符串的属性，就需要用函数形式。
+
+
+### 翻译插件数据
+
+JSON 翻译文件用于所有散落在你的代码中的内容：
+
+* React 代码，包括你在上面标记的待翻译文本
+* 主题配置中的导航栏和页脚标签
+* sidebars.js 中的文档侧边栏分类标签
+* 插件选项中的博客侧边栏标题
+* ……
+
+Run the `write-translations` command:
+````mdx-code-block
+<Tabs>
+<TabItem value="npm" label="npm" default>
+
+```bash
+npm run write-translations -- --locale zh-Hans
+```
+</TabItem>
+<TabItem value="yarn" label="yarn">
+
+```bash npm2yarn
+yarn run write-translations -- --locale zh-Hans
+```
+</TabItem>
+</Tabs>
+````
+
+这个命令会提取并初始化待翻译的 JSON 翻译文件。 根目录下的 code.json 文件包含了从源代码中提取的所有翻译 API 调用，包括你编写的，以及主题提供的代码，有一些可能已经被默认翻译了。
+
+逐个翻译 i18n/zh-Hans 中 JSON 文件的 message 属性，然后你的站点布局及首页就应该是已翻译状态了。
+
+
+### 翻译 Markdown 文件 
+Docusaurus 官方内容插件大量使用 Markdown/MDX 文件，并允许你翻译它们。
+
+#### 翻译文档
+把你的 Markdown 文档从 docs/ 复制进 i18n/zh-Hans/docusaurus-plugin-content-docs/current，然后翻译它们：
+
+```bash
+mkdir -p i18n/zh-Hans/docusaurus-plugin-content-docs/current
+cp -r docs/** i18n/zh-Hans/docusaurus-plugin-content-docs/current
+```
+
+:::info 信息
+要注意， docusaurus-plugin-content-docs 插件总是会按照版本划分它的内容。 
+./docs 文件夹中的数据会在 current 子文件夹和 current.json 文件中被翻译。 See the doc versioning guide for more information about what "current" means.
+:::
+
+#### 翻译博客
+把你的博客的 Markdown 文件复制进 i18n/zh-Hans/docusaurus-plugin-content-blog，然后翻译它们：
+```bash
+mkdir -p i18n/zh-Hans/docusaurus-plugin-content-blog
+cp -r blog/** i18n/zh-Hans/docusaurus-plugin-content-blog
+```
+
+#### 翻译页面
+把你的页面的 Markdown 文件复制进 i18n/zh-Hans/docusaurus-plugin-content- pages，然后翻译它们：
+```bash
+mkdir -p i18n/zh-Hans/docusaurus-plugin-content-pages
+cp -r src/pages/**.md i18n/zh-Hans/docusaurus-plugin-content-pages
+cp -r src/pages/**.mdx i18n/zh-Hans/docusaurus-plugin-content-pages
+```
+
+:::caution 注意
+我们只复制了 .md 与 .mdx 文件，因为 React 页面已经在前文中用 JSON 文件翻译好了。
+:::
+
+:::info 使用显示标题ID
+使用显式标题 ID
+Markdown 标题 ### Hello World 会默认自动生成 ID hello-world。 其他文档可以用 [链接](#hello-world) 的形式链接到这个标题。 但是，翻译后的标题变成了 ### 你好世界，ID 也随即变成了 你好世界。
+
+这样，你就得本地化所有锚点链接。所以，自动生成 ID 通常不适合本地化站点。
+
+```md
+- [链接](#hello-world)
++ [链接](#你好世界)
+```
+
+对于本地化站点，我们推荐使用显式标题 ID。
+
+``` md
+### Hello World {#my-explicit-id}
+```
+:::
+
+
+## 部署站点
+你可以选择是将站点部署在一个域名还是多个（子）域名下。
+
+### 单域名部署
+运行以下命令：
+
+````mdx-code-block
+<Tabs>
+<TabItem value="npm" label="npm" default>
+
+```bash
+npm run build
+```
+</TabItem>
+<TabItem value="yarn" label="yarn">
+
+```bash npm2yarn
+yarn run build
+```
+</TabItem>
+</Tabs>
+````
+
+Docusaurus 会为每个语言构建一个单页应用：
+* website/build：默认语言英文
+* website/build/zh-Hans：简体中文语言
+
+你现在可以把 `build` 文件夹[部署](/docs/front/Docusaurus/deployment#部署到-vercel)到你选择的静态托管方案上了。
+
+:::tip
+静态托管商通常会按惯例把 /unknown/url 重定向到 /404.html，这样就会始终显示英文版 404 错误页面。
+
+配置你的主机，将 /zh-Hans/* 重定向到 /zh-Hans/404.html，以确保 404 错误页被本地化。
+
+但这不是总是可行的，取决于你的托管商：比如 GitHub Pages 就无法配置，但 Netlify 可以。
+:::
+
+### 多域名部署
+你可以为某个语言单独构建站点：
+````mdx-code-block
+<Tabs>
+<TabItem value="npm" label="npm" default>
+
+```bash
+npm run build -- --locale zh-Hans
+```
+</TabItem>
+<TabItem value="yarn" label="yarn">
+
+```bash npm2yarn
+yarn run build -- --locale zh-Hans
+```
+</TabItem>
+</Tabs>
+````
+
+Docusaurus 将不会添加 `/zh-Hans/` URL 前缀。
+
+在你的静态托管商上：
+
+为每种语言做一份部署
+配置构建指令，使用相应的 --locale 选项
+为每份部署配置一个（子）域名
+
+:::caution 注意
+因为 Github Pages 只能做一份部署，它不支持这种部署策略。
+:::
+
+
+### 混合部署
+你可以把某些语言部署在子路径下，同时把另一些语言部署在子域名上。
+
+你也可以把每个语言部署在单独的子域名上，然后在 CDN 层面把子域名合并成单一域名：
+
+* 把你的网站部署为 zh-Hans.docusaurus.io
+* 配置 CDN，让它在 docusaurus.io/zh-Hans 提供服务
+
+## 管理翻译
+
+Docusaurus 不关心你的翻译是如何管理的：它唯一关心的就是所有翻译文件（JSON、Markdown、其他数据文件）都在构建时存在在文件系统中。
+ 然而，作为网站创建者，你需要考虑如何管理翻译，这样你的翻译贡献者才能顺利合作。
+
+
+我们将分享两种常见的翻译协作策略：使用 [git](/docs/front/Docusaurus/i18n/git)和使用 [Crowdin](/docs/front/Docusaurus/i18n/crowdin)。
+
+
+

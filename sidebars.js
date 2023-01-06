@@ -72,7 +72,19 @@ const sidebars = {
               ],
             },
             'front/Docusaurus/deployment',
-            
+            {
+              label:'国际化',
+              type: 'category',
+              link:{
+                type:'doc',
+                id:'front/Docusaurus/i18n/introduction'
+              },
+              items:[
+                'front/Docusaurus/i18n/tutorial',
+                'front/Docusaurus/i18n/git',
+                'front/Docusaurus/i18n/crowdin'
+              ]
+            }
           ]
         }
       ]

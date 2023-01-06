@@ -1,0 +1,87 @@
+---
+description: 国际化
+custom_edit_url: null
+---
+
+# i18n - 简介
+Docusaurus 自带国际化（[i18n](https://en.wikipedia.org/wiki/Internationalization_and_localization)）支持，你可以轻松翻译 Docusaurus 网站。
+
+
+## 概览
+以下是创建翻译版 Docusaurus 站点的主要流程：
+1. 配置：在 docusaurus.config.js 中声明默认及备选语言
+2. 翻译：将翻译过的文件放置在正确的文件系统位置即可
+3. 部署：使用单域名或多域名策略构建并部署你的站点
+
+## 翻译文件
+你会和三种翻译文件打交道。
+
+Markdown 和 MDX 文档会被统一翻译，而不会把每个句子分割成独立的字符串，以保证翻译语境正确。
+
+### JSON 文件
+JSON 用于翻译：
+* 你的 React 代码： src/pages 中的独立 React 页面或其他组件
+* 通过 themeConfig 提供的布局文本：导航栏，页脚等
+* 通过插件选项提供的布局文本：文档侧边栏菜单标签，博客侧边栏标题等
+
+我们使用的 JSON 格式名为 Chrome i18n：
+```json 
+{
+  "myTranslationKey1": {
+    "message": "已翻译的信息 1",
+    "description": "myTranslationKey1 用于主页"
+  },
+  "myTranslationKey2": {
+    "message": "已翻译的信息2",
+    "description": "myTranslationKey2 用于 FAQ 页"
+  }
+}
+
+```
+
+这一选择有两个原因：
+* 每条文本都有描述属性：为翻译者提供额外的语境
+* 广泛支持：[Chrome 插件](https://developer.chrome.com/docs/extensions/mv2/i18n-messages/)、
+[Crowdin](https://support.crowdin.com/file-formats/chrome-json/)、
+[Transifex](https://docs.transifex.com/formats/chrome-json)、
+[Phrase](https://help.phrase.com/help/chrome-json-messages)、
+[Applanga](https://www.applanga.com/docs/formats/chrome_i18n_json)，等等
+
+
+### 翻译文件位置
+翻译文件必须创建在正确的文件系统位置。
+
+每种语言和每个插件均有其自己的 i18n 子文件夹：
+```tel
+website/i18n/[语言]/[插件名]/...
+```
+
+:::note 备注
+对于多实例插件而言，路径则为 website/i18n/[语言]/[插件名]-[插件 ID]/...。
+:::
+
+把一个简单的 Docusaurus 网站翻译成简体中文，会产生如下的网站结构：
+```tel
+website/i18n
+└── fr
+    ├── code.json  # 所有 React 代码里的文本标签
+    │              # 也包括主题代码里的文本
+    ├── docusaurus-plugin-content-blog # 博客插件需要的翻译数据
+    │   └── 2020-01-01-hello.md
+    │
+    ├── docusaurus-plugin-content-docs # 文档插件需要的翻译数据
+    │   ├── current
+    │   │   ├── doc1.md
+    │   │   └── doc2.mdx
+    │   └── current.json
+    │
+    └── docusaurus-theme-classic # 经典主题需要的翻译数据
+        ├── footer.json   # 页脚主题配置对应的文本
+        └── navbar.json   # 导航栏主题配置对应的文本
+```
+
+The JSON files are initialized with the `docusaurus write-translations` CLI command. 
+每个插件会在它自己的对应文件夹下寻找翻译内容，而 `code.json` 文件定义了 React 代码中使用的所有文本标签。
+
+
+
