@@ -90,6 +90,22 @@ const sidebars = {
       ]
     }
   ],
+  backIndex:[
+    {
+      type:'category',
+      label:'回顾',
+      link: {
+        type: 'generated-index',
+        title: '目录集合',
+        slug: '/back',
+        description: '介绍'
+      },
+      items:[
+        "back/ReCode"
+      ]
+    }
+  ]
+
 };
 
 module.exports = sidebars;

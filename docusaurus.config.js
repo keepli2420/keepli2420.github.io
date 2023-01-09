@@ -102,6 +102,12 @@ const config = {
             label: "前端",
           },
           {
+            // type: 'doc',
+            to: "/docs/back",
+            position: "left",
+            label: "后端",
+          },
+          {
             type: "doc",
             docId: "intro",
             position: "left",
