@@ -65,9 +65,50 @@ Generation)。老生代的特点是每次垃圾回收时只有少量对象需要
 引用的主要作用是跟踪对象被垃圾回收的状态。
 
 
+## JAVAGC收集器
+* Serial GC：它是最古老的垃圾收集器，采用单线程，复制算法。进行垃圾收集时会暂停所有线程。Client模式下JVM的默认选项
+<br/>-XX:+UseSerialGC
+* ParNew GC：新生代GC实现。它实际上是Serial的多线程版本，默认开启和 CPU 数目相同的线程数，可以通过-XX:ParallelGCThreads 参数来限
+制垃圾收集器的线程数。最常见的应用是配合老年代CMS GC 工作。
+<br/>-XX:+UseConcMarkSweepGC -XX:+UseParNewGC 
+* Parallel Scavenge GC：JDK 8 等版本中，它是 server 模式 JVM 的默认 GC 选择，也被称作是吞吐量优先的 GC。它重点关注的是程序达到一个可控制的吞吐量
+（Thoughput，CPU 用于运行用户代码的时间/CPU 总消耗时间，即吞吐量=运行用户代码时间/(运行用户代码时间+垃圾收集时间)）
+高吞吐量可以最高效率地利用 CPU 时间，尽快地完成程序的运算任务，主要适用于在后台运算而
+不需要太多交互的任务。自适应调节策略也是 ParallelScavenge 收集器与 ParNew 收集器的一个
+重要区别。
+* Serial Old GC：Serial Old 是 Serial 垃圾收集器年老代版本，它同样是个单线程的收集器，使用标记-整理算法，
+这个收集器也主要是运行在 Client 默认的 java 虚拟机默认的年老代垃圾收集器。
+* Parallel Old GC：Parallel Old 收集器是Parallel Scavenge的年老代版本，使用多线程的标记-整理算法，
+在 JDK1.6才开始提供。
+* CMS GC：Concurrent mark sweep(CMS)收集器是一种年老代垃圾收集器，其最主要目标是获取最短垃圾回收停顿时间，
+和其他年老代使用标记-整理算法不同，它使用多线程的标记-清除算法。
+<br/>最短的垃圾收集停顿时间可以为交互比较高的程序提高用户体验。
+  1. 暂停所有工作线程，标记GC Roots直接关联对象。速度很快
+  2. 并发跟踪GC Roots，该过程不会暂停用户线程
+  3. 暂停所有工作线程，修正用户线程运行时变动的对象标记记录，重新标记。
+  4. 并发清除，清除GC Roots 不可达对象，不需要暂停用户线程
+<br/>
+由于耗时最长的并发标记和并发清除过程中，垃圾收集线程可以和用户现在一起并发工作，
+所以总体上来看CMS 收集器的内存回收和用户线程是一起并发地执行。
+* G1 GC：Garbage first 垃圾收集器是目前垃圾收集器理论发展的最前沿成果Garbage-First，意为垃圾优先，哪一块的垃圾最多就优先清理他。
+G1 GC 可以看做是CMS GC的重大升级改造。和CMS GC相比，它采用标记-整理算法；
+可以精准控制停顿时间(200ms)。它将堆内存等分几个独立区域(2048个Region)并维护一个优先级列表
+<br/> -XX:+UserG1GC   -XX:MaxGCPauseMillis=50
 
+### GC 如何选择
+![GC Compare](./img/GC_Compare.png)
 
+1. 如果系统考虑吞吐优先，CPU 资源都用来最大程度处理业务，用 Parallel GC；
+2. 如果系统考虑低延迟有限，每次 GC 时间尽量短，用 CMS GC；
+3. 如果系统内存堆较大，同时希望整体来看平均 GC 时间可控，使用 G1 GC
 
+对于内存大小的考量：
+1. 一般 4G 以上，算是比较大，用 G1 的性价比较高。
+1. 一般超过 8G，比如 16G-64G 内存，非常推荐使用 G1 GC。
+
+jdk1.7 默认垃圾收集器Parallel Scavenge（新生代【标记-复制算法】）+Parallel Old（老年代【标记整理算法】） 
+jdk1.8 默认垃圾收集器Parallel Scavenge（新生代）+Parallel Old（老年代） 
+jdk1.9 默认垃圾收集器G1【从局部(两个Region之间)来看是基于"标记—复制"算法实现，从整体来看是基于"标记-整理"算法实现】
 
 ## 类的加载机制
 类的加载指的是将类的.class文件中的二进制数据读入到内存中，将其放在运行时数据区的方法区内，然后在堆区创建一个java.lang.Class对象，
@@ -255,6 +296,14 @@ Java 里面线程池的顶级接口是 Executor，但是严格意义上讲 Execu
 保证所有任务按照指定顺序(FIFO, LIFO, 优先级)执行。
 
 #### 自定义线程池
+```java
+public ThreadPoolExecutor(int corePoolSize, int maximumPoolSize,
+                          long keepAliveTime, TimeUnit unit,
+                          BlockingQueue<Runnable> workQueue,
+                          ThreadFactory threadFactory,
+                          RejectedExecutionHandler handler) 
+```
+
 1. corePoolSize：指定了线程池中的线程数量。
 2. maximumPoolSize：指定了线程池中的最大线程数量。
 3. keepAliveTime：当前线程池数量超过 corePoolSize 时，多余的空闲线程的存活时间，即多
@@ -394,31 +443,69 @@ CAS操作中包含三个操作数——需要读写的内存位置(V)、进行�
 降低了锁的竞争，偏向锁，轻量级锁成功率才会提高。最最典型的减小锁粒度的案例就是ConcurrentHashMap。
 3. 锁分离：最常见的锁分离就是读写锁 ReadWriteLock，根据功能进行分离成读锁和写锁，这样读读不互斥，
 读写互斥，写写互斥，即保证了线程安全，又提高了性能，
-4. 锁粗化：通常情况下，为了保证多线程间的有效并发，会要求每个线程持有锁的时间尽量短，即在使用完
+4. 锁粗化：通常情况下，为了保证多线程间image.png的有效并发，会要求每个线程持有锁的时间尽量短，即在使用完
 公共资源后，应该立即释放锁。但是，凡事都有一个度，如果对同一个锁不停的进行请求、同步和释放，
 其本身也会消耗系统宝贵的资源，反而不利于性能的优化 。
 
+## Spring
+### 核心组件
+![Spring_Core_comm](./img/Spring_Core_comm.png)
 
 
+### 常用模块
+![Spring_common_modules](./img/Spring_common_modules.png)
+
+### 常用jar包
+![Spring_common_jar](./img/Spring_common_jar.png)
+
+### 常用注解
+1. 
+   * Controller：用于控制层组件。标记到一个类上，这个类就是Spring MVC Controller对象。
+   分发处理器将扫描该类的方法是否用了@RequestMapping注解。
+   * RestController：相当于Controller和ResponseBody的组合
+   * Component：泛指组件，不好归类的时候使用
+   * Repository：用于dao层，在daoImpl类上使用 
+   * Service：标注业务层组件
+2. 
+   * @ResponseBody：将Controller的方法返回的对象经过HttpMessageConverter处理为指定格式后，写入Response.Body区
+   * @RequestMapping：一个处理请求地址映射的注解。用在类上表示所有路径的父路径。
+   * @AutoAware：自动注入。DI
+   * @PathVariable：将请求路径上的路径参数绑定到方法参数上。
+   * @RequestParam：将表单数据绑定到方法参数上。
+   * @RequestHeader：将请求头参数绑定到方法参数上。
+3. 
+   * @ModelAttribute：在方法上使用。在所有的Controller方法调用前调用。
+   * @SessionAttributes：将值放到Session作用域中，写在class上
+   * @CookValue：用来获取Cookie中的值
+
+### IOC 原理
+IOC（控制反转）：通过一个配置文件描述Bean和Bean之间的依赖关系，并通过反射实例化Bean并建立依赖关系。
+
+IOC容器：在完成IOC工作后，提供了Bean实例的缓存，生命周期管理，Bean实例代理，事件发布，资源装载等高级服务。
+
+### Bean作用域
+1. singleton：单例模式。Spring IoC 容器中只会存在一个共享的 Bean 实例，无论有多少个Bean 引用它，
+始终指向同一对象。该模式在多线程下是不安全的。
+`<bean id="userDao" class="com.ioc.UserDaoImpl" scope="singleton"/>`
+2. prototype：原型模式，每次通过 Spring 容器获取 prototype 定义的 bean 时，
+容器都将创建一个新的 Bean 实例
+`<bean id="userDao" class="com.ioc.UserDaoImpl" scope="prototype"/>`
+3. request：：在一次 Http 请求中，容器会返回该 Bean 的同一实例。而对不同的 Http 请求则会产生新的 Bean，
+而且该 bean 仅在当前 Http Request 内有效,当前 Http 请求结束，该 bean实例也将会被销毁。
+`<bean id="loginAction" class="com.cnblogs.Login" scope="request"/>`
+4. session：在一次 Http Session 中，容器会返回该 Bean 的同一实例。
+`<bean id="userPreference" class="com.ioc.UserPreference" scope="session"/>`
+5. global Session：在一个全局的 Http Session 中，容器会返回该 Bean 的同一个实例，仅在
+使用 portlet context 时有效。
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+### Bean生命周期
+![Spring_Bean_Life](./img/Spring_Bean_Life.png)
+1. 加载配置文件或扫描注解，解析到BeanDefinition接口的实现类中
+2. 实例化（new）bean。AbstractAutoWireCapableBeanFactory.doCreateBean中会调用createBeaninstance()方法，
+该阶段主要是从beanDefinitionMap循环读取bean，获取他的属性，然后利用反射读取对象的构造方法，进行实例化对象，
+此时是一个空对象在JVM堆中所有属性并未赋值。
+3. 属性注入通过populateBean()对bean进行属性填充。
 
 
 
