@@ -7,13 +7,20 @@ custom_edit_url: null
 
 ## JVM算法
 
-Minor 复制算法
-major 标记清除算法
-
 引用计数法：如果一个对象的被引用次数为0，则说明这个对象可能不再会被用到，那么这个对象就是可回收的对象
 存在循环引用问题
 
 可达性分析：为了解决循环引用，以一系列的GCroot对象作为起点搜索，如果GC roots 和一个对象之间没有可达路径，这称该对象不可达，在经过两侧标记过程后，将面临回收
+
+在Java语言中，可作为GC Roots的对象包含以下几种：
+
+  * 虚拟机栈(栈帧中的本地变量表)中引用的对象。(可以理解为:引用栈帧中的本地变量表的所有对象)
+
+  * 方法区中静态属性引用的对象(可以理解为:引用方法区该静态属性的所有对象)
+
+  * 方法区中常量引用的对象(可以理解为:引用方法区中常量的所有对象)
+
+  * 本地方法栈中(Native方法)引用的对象(可以理解为:引用Native方法的所有对象)
 
 标记清除法：最基础的回收算法。分为两阶段，标记和清除。标记所有需要清除的对象，清除回收被标记的对象所占用的空间
 存在内存碎片化问题，后续大对象找不到可利用的空间
@@ -88,12 +95,33 @@ Generation)。老生代的特点是每次垃圾回收时只有少量对象需要
   3. 暂停所有工作线程，修正用户线程运行时变动的对象标记记录，重新标记。
   4. 并发清除，清除GC Roots 不可达对象，不需要暂停用户线程
 <br/>
-由于耗时最长的并发标记和并发清除过程中，垃圾收集线程可以和用户现在一起并发工作，
-所以总体上来看CMS 收集器的内存回收和用户线程是一起并发地执行。
-* G1 GC：Garbage first 垃圾收集器是目前垃圾收集器理论发展的最前沿成果Garbage-First，意为垃圾优先，哪一块的垃圾最多就优先清理他。
-G1 GC 可以看做是CMS GC的重大升级改造。和CMS GC相比，它采用标记-整理算法；
-可以精准控制停顿时间(200ms)。它将堆内存等分几个独立区域(2048个Region)并维护一个优先级列表
-<br/> -XX:+UserG1GC   -XX:MaxGCPauseMillis=50
+并发标记与并发清除最耗时，但是不用STW。所以整体的回收的底停顿的。
+
+```info title="CMS为什么采用标记清除算法而不是标记整理算法呢？"
+因为当并发清除的时候，用标记整理算法整理内存的话，原来的用户线程使用的内存还怎么用呢？要保证用户线程能继续执行，前提的它运行的资源不受影响嘛。
+标记整理算法更适合“Stop the World” 这种场景下使用
+```
+
+
+* G1 GC:基于标记整理算法，可用精准控制停顿时间，在不牺牲吞吐量的前提下，实现低停顿回收<br/>
+内存分区上不存在老年代和新生代的区别，只是在逻辑上有分代的概念，随着G1的运行，每个分区都可能在不同代之间切换。
+G1垃圾收集器还增加了一种新的内存区域，叫做Humongous内存区域，主要用于存储大对象，如果超过1.5个region，就放到H。
+对于堆中的对象(Eden放不下的大对象)，默认直接会被分配到老年代，但是如果它是一个短期存在的大对象就会对垃圾收集器造成负面影响。
+G1垃圾收集器回收时只会回收部分分区，并且选择回收价值高的分区进行回收<br/>
+G1垃圾收集过程包含三个环节：
+  * 年轻代GC（Yang GC）：当年轻代的Eden区用尽时开始年轻代回收过程；G1的年轻代收集阶段是一个并行的独占式收集器。在年轻代回收期，
+  G1GC暂停所有应用程序线程，启动多线程执行年轻代回收。然后从年轻代区间移动存活对象到Survivor区间或者老年区间，也有可能是两个区间都会涉及。
+  * 老年代并发标记过程（Concurrent Marking）：当堆内存使用达到一定值（默认45%）时，开始老年代并发标记过程。标记完成马上开始混合回收过程。
+  * 混合回收（Mixed GC）：G1 GC从老年区间移动存活对象到空闲区间，这些空闲区间也就成为了老年代的一部分。G1的老年代回收器不需要整个老年代被回收，一次只需要扫描/回收一小部分老年代的Region就可以了。
+  同时，这个老年代Region是和年轻代一起被回收的。<br/>
+  为了避免全局扫描而引入记忆集的概念`Remembered Set`;
+  G1为了避免`STW`式的整堆扫描为每个分区各自分配了一个 RSet（Remembered Set），它内部类似于一个反向指针，记录了其它 Region 对当前 Region 的引用情况，这样就带来一个极大的好处：
+  回收某个Region时，不需要执行全堆扫描，只需扫描它的 RSet 就可以找到外部引用进而确定本分区对象存活的情况
+
+
+
+[参考](https://zhuanlan.zhihu.com/p/519446431)
+[参考](https://blog.csdn.net/a745233700/article/details/121724998)
 
 ### GC 如何选择
 ![GC Compare](./img/GC_Compare.png)
@@ -109,6 +137,12 @@ G1 GC 可以看做是CMS GC的重大升级改造。和CMS GC相比，它采用�
 jdk1.7 默认垃圾收集器Parallel Scavenge（新生代【标记-复制算法】）+Parallel Old（老年代【标记整理算法】） 
 jdk1.8 默认垃圾收集器Parallel Scavenge（新生代）+Parallel Old（老年代） 
 jdk1.9 默认垃圾收集器G1【从局部(两个Region之间)来看是基于"标记—复制"算法实现，从整体来看是基于"标记-整理"算法实现】
+
+在JVM中是+XX配置实现的搭配组合：
+* UseSerialGC 表示 “Serial” + "Serial Old"组合
+* UseParNewGC 表示 “ParNew” + “Serial Old”
+* UseConcMarkSweepGC 表示 “ParNew” + “CMS”. 组合，“CMS” 是针对旧生代使用最多的
+* UseParallelGC 表示 “Parallel Scavenge” + "Parallel Old"组合
 
 ## 类的加载机制
 类的加载指的是将类的.class文件中的二进制数据读入到内存中，将其放在运行时数据区的方法区内，然后在堆区创建一个java.lang.Class对象，
@@ -347,6 +381,7 @@ BlockingQueue是双缓冲队列。BlockingQueue内部使用两条队列，
 需要，完全可以自己扩展 RejectedExecutionHandler 接口。</p>
 
 ### volatile 关键字的作用（变量可见性、禁止重排序）
+volatile是java虚拟机提供的轻量级的同步机制，一共有三大特性，保证可见性，不保证原子性，禁止指令重排。
 Java 语言提供了一种稍弱的同步机制，即 volatile 变量，用来确保将变量的更新操作通知到其他
 线程。volatile 变量具备两种特性，volatile 变量不会被缓存在寄存器或者对其他处理器不可见的
 地方，因此在读取 volatile 类型的变量时总会返回最新写入的值。
@@ -448,6 +483,7 @@ CAS操作中包含三个操作数——需要读写的内存位置(V)、进行�
 其本身也会消耗系统宝贵的资源，反而不利于性能的优化 。
 
 ## Spring
+> 轻量级的JAVA开源开发框架，主要是为了解耦和简化开发
 ### 核心组件
 ![Spring_Core_comm](./img/Spring_Core_comm.png)
 
@@ -479,7 +515,7 @@ CAS操作中包含三个操作数——需要读写的内存位置(V)、进行�
    * @CookValue：用来获取Cookie中的值
 
 ### IOC 原理
-IOC（控制反转）：通过一个配置文件描述Bean和Bean之间的依赖关系，并通过反射实例化Bean并建立依赖关系。
+IOC（控制反转）：不用New关键字实例化对象而是通过一个配置文件描述Bean和Bean之间的依赖关系，并通过反射实例化Bean并建立依赖关系。让IOC容器管理bean
 
 IOC容器：在完成IOC工作后，提供了Bean实例的缓存，生命周期管理，Bean实例代理，事件发布，资源装载等高级服务。
 
@@ -501,40 +537,200 @@ IOC容器：在完成IOC工作后，提供了Bean实例的缓存，生命周期�
 
 ### Bean生命周期
 ![Spring_Bean_Life](./img/Spring_Bean_Life.png)
-1. 加载配置文件或扫描注解，解析到BeanDefinition接口的实现类中
-2. 实例化（new）bean。AbstractAutoWireCapableBeanFactory.doCreateBean中会调用createBeaninstance()方法，
-该阶段主要是从beanDefinitionMap循环读取bean，获取他的属性，然后利用反射读取对象的构造方法，进行实例化对象，
-此时是一个空对象在JVM堆中所有属性并未赋值。
-3. 属性注入通过populateBean()对bean进行属性填充。
+> AbstractApplicationContext.refresh()下
+1. 在AbstractRefreshableApplicationContext刷新beanFactory时
+通过loadBeanDefinitions()加载配置文件或扫描注解，解析到BeanDefinition接口的实现类中，<br/>
+执行invokeBeanFactoryPostProcessors(),可以对beanDefinition进行操作
+2. 实例化（new）bean。AbstractAutoWireCapableBeanFactory.resolveBeforeInstantiation()执行bean实例化后置处理器InstantiationAwareBeanPostProcessor,
+如果postProcessBeforeInstantiation()返回的值部位NULL，则说明用户自定义实例化bean成功，不执行下面的doCreateBean()但会执行BeanPostProcessor;
+3. doCreateBean(),会调用createBeaninstance()创建实例<br/>
+调用pupolateBean()填充属性;<br/>  
+initializeBean()初始化bean
+4. initializeBean(),执行invokeAwareMethods()name,classLoader,beanFactory;<br/>
+执行BeanPostProcessor.postProcessBeforeInitialization;ApplicationContextAwareProcessor,Aware接口后置处理器<br/>
+invokeInitMethods(),实现InitializingBean.afterPropertiesSet接口或@PostConstruct注解,xml文件init-method; <br/>
+BeanPostProcessor.postProcessBeforeInitialization
+5. 单例情况下 bean放入缓存池 如果实现DisposableBean或@preDestory或destory-method自定义bean销毁
+6. 多例情况下 bean返回给用户 剩下的生命周期由用户控制
+
+
+### DI (Dependency Injection)
+依赖注入是指在 Spring IOC 容器创建对象的过程中，将所依赖的对象通过配置进行注入。我们可以通过依赖注入的方式来降低对象间的耦合度。<br/>
+开闭原则，对扩展开放，对修改关闭
+
+#### 注入方式
+* 构造方法注入
+* setter方法注入
+* 自动注入：
+  * @Autowried：按类型注入可以出现在成员变量成员方法上，spring提供的，默认按照类型注入
+  * @Qualifier: 配合类型注入使用，制定beanID，可以单独使用在方法上
+  * @Resources：默认按照beanID注入，找不到了或者name未指定而type制定了会通过类型注入。是java2EE内置的
+
+
+### AOP（静态代理）
+> 使用场景：日志，缓存，事务，权限
+
+核心概念：
+1. 切面（aspect）：类是对物体特征的抽象，切面就是对横切关注点的抽象
+
+2. 横切关注点：对哪些方法进行拦截，拦截后怎么处理，这些关注点称之为横切关注点。
+
+3. 连接点（joinpoint）：被拦截到的点，因为 Spring 只支持方法类型的连接点，所以在 Spring
+
+中连接点指的就是被拦截到的方法，实际上连接点还可以是字段或者构造器。
+
+4. 切入点（pointcut）：对连接点进行拦截的定义
+
+5. 通知（advice）：所谓通知指的就是指拦截到连接点之后要执行的代码，通知分为前置、后置、
+异常、最终、环绕通知五类。
+6. 目标对象：代理的目标对象
+7. 织入（weave）：将切面应用到目标对象并导致代理对象创建的过程
+
+通知类型：
+1. 前置通知：before advice：在连接点前通知，方法前通知
+2. 后置通知：after advice：在连接点后通知，方法后通知，没有异常正常返回
+3. 异常通知：after throwing advice：在方法抛出异常的时候通知
+4. 最终通知：after returning：方法执行后通知，无论是否有异常，都会执行
+5. 环绕通知：围绕在连接点前后，还可以控制方法的执行和中断，ProceedingJoinPoint.proceed()
+
+AOP代理方式：
+
+CGLIB是针对类来实现代理的。原理是对指定的目标类生成一个子类，并覆盖其中方法实现增强，但因为采用的是继承，所以不能对final修饰的类进行代理。 
+
+JDK的动态代理机制只能代理实现了接口的类，而不能实现接口的类就不能实现JDK的动态代理。
+
+1. JDK动态代理：JDK 动态代理主要涉及到java.lang.reflect 包中的两个类：Proxy 和 InvocationHandler。
+![JDK_Proxy](img/JDK_Proxy.png)
+2. Cglib动态代理：
+> System.setProperty(DebuggingClassWriter.DEBUG_LOCATION_PROPERTY, "E:\\CglibProxyClass");
+![Cglib_Proxy](img/Cglib_Proxy.png)
 
 
 
+### Spring MVC
+> spring MVC 是一个轻量级的Web开发框架，本质上是Servlet。他有三个主要的角色。model、view和Controller
+
+基本流程：
+1. 用户通过浏览器发起 HttpRequest 请求到前端控制器 (DispatcherServlet)。
+2. DispatcherServlet 将用户请求发送给处理器映射器 (HandlerMapping)。
+3. 处理器映射器 (HandlerMapping)会根据请求，找到负责处理该请求的处理器，并将其封装为处理器执行链 返回 (HandlerExecutionChain) 给 DispatcherServlet
+4. DispatcherServlet 会根据 处理器执行链 中的处理器，找到能够执行该处理器的处理器适配器(HandlerAdaptor)    --注，处理器适配器有多个
+5. 处理器适配器 (HandlerAdaptoer) 会调用对应的具体的 Controller
+6. Controller 将处理结果及要跳转的视图封装到一个对象 ModelAndView 中并将其返回给处理器适配器 (HandlerAdaptor)
+7. HandlerAdaptor 直接将 ModelAndView 交给 DispatcherServlet ，至此，业务处理完毕
+8. 业务处理完毕后，我们需要将处理结果展示给用户。于是DisptcherServlet 调用 ViewResolver，将 ModelAndView 中的视图名称封装为视图对象
+9. ViewResolver 将封装好的视图 (View) 对象返回给 DIspatcherServlet
+10. DispatcherServlet 调用视图对象，让其自己 (View) 进行渲染（将模型数据填充至视图中），形成响应对象 (HttpResponse)
+11. 前端控制器 (DispatcherServlet) 响应 (HttpResponse) 给浏览器，展示在页面上。
+
+#### FilterAndInterceptor
+
+![filterAndInterceptor](img/FilterAndInterceptor.png)
+
+常见创建Filter：
+1. Spring 项目中，我们可以使用 
+@Configuration + @Bean + FilterRegistrationBean 对 Filter 进行配置：
+```java
+@Configuration
+public class FilterConfig {
+    @Bean
+    public FilterRegistrationBean<TestFilter> registryFilter() {
+        FilterRegistrationBean<TestFilter> registration = new FilterRegistrationBean<>();
+        registration.setFilter(new TestFilter());
+        registration.addUrlPatterns("/*");
+        registration.setName("TestFilter");
+        registration.setOrder(0);
+        return registration;
+    }
+}
+```
+2. 继承 OncePerRequestFilter：
+```java
+@Component
+@Order(1)
+public class CSpringFilter extends OncePerRequestFilter {
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+        // 处理逻辑
+    }
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        // 放行规则
+    }
+}
+```
+3. 只使用@Component 注解和Order注解，不推荐，它会拦截所有路径
+4. @WebFilter配合@ServletComponetScan：不能自定义执行顺序，按字典顺序执行
+
+创建Interceptor：
+```java
+public class FilterAndInterceptor implements HandlerInterceptor {
+    @Override
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        //在 Controller 方法执行前被调用，可以对请求做预处理。该方法的返回值是一个 boolean 变量，只有当返回值为 true 时，程序才会继续向下执行。
+        return HandlerInterceptor.super.preHandle(request, response, handler);
+    }
+
+    @Override
+    public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
+        //在 Controller 方法执行结束，DispatcherServlet 进行视图渲染之前被调用，该方法内可以操作 Controller 处理后的 ModelAndView 对象。
+        HandlerInterceptor.super.postHandle(request, response, handler, modelAndView);
+    }
+
+    @Override
+    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
+        //在整个请求处理完成（包括视图渲染）后被调用，通常用来清理资源。
+        HandlerInterceptor.super.afterCompletion(request, response, handler, ex);
+    }
+```
+
+拦截器和过滤器有什么区别？
+
+1. 过滤器是Servlet规范依赖于Tomcat容器而拦截器是Spring的组件不依赖于Tomcat容器
+2. 拦截器是基于java的反射机制的，而过滤器是基于函数回调(filterChain.doFilter(servletRequest, servletResponse))
+3. 过滤器比拦截器先执行
+4. 过滤器是对Servlet进行前后置处理而拦截器是对Controller进行前后处理
+5. 拦截器只能对Action请求起作用（Action中的方法），而过滤器可以对几乎所有的请求起作用（CSS JSP JS）
+
+
+### Spring 事务
+* 编程式事务：通过编程的方式管理事务，这种方式带来了很大的灵活性，但很难维护。
+* 声明式事务：将事务管理代码从业务方法中分离出来，通过aop进行封装。<br/>
+Spring声明式事务使得我们无需要去处理获得连接、关闭连接、事务提交和回滚等这些操作。使用 @Transactional 注解开启声明式事务。
+
+事务传播行为：
+1. REQUIRED(0)：如果存在事务，则支持该事务；如果不存在，则创建事务；如果嵌套使用并且是同一个线程则使用同一个事务，否则创建新事务
+2. SUPPORTS(1)：如果存在事务，则支持事务；如果不存在则以非事务方式执行
+3. MANDATORY(2)：如果存在事务，则支持事务；如果不存在则抛出异常`IllegalTransactionStateException`
+4. REQUIRES_NEW(3)：总是开启一个新的事物，嵌套使用时，事务是隔离的，互不影响
+5. NOT_SUPPORTED(4)：以非事务方式执行，如果有事务则挂起
+6. NEVER(5)：以非事务方式执行，如果有事务则抛出异常
+7. NESTED(6)：如果存在事务，则运行在一个嵌套事务中，外层事务的回滚可以引起内层事务的回滚。而内层事务的异常并不会导致外层事务的回滚，它是一个真正的嵌套事务。
+则创建新的事物。
+
+事务失效：
+1. 访问权限不是public
+2. 被final修饰的方法
+3. bean没有被Spring管理
+4. 数据库不支持事务，例Mysql的myisam引擎
+5. 方法内部调用
+
+
+Spring 循环依赖
 
 
 
+### SpringBoot
+用于简化Spring 应用的初始搭建以及开发过程。关于 SpringBoot 有一句很出名的话就是约定大于配置。
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+特性：
+1. 能够快速创建基于spring的程序
+2. 能够直接使用Java main方法启动内嵌的Tomcat服务器运行springboot程序，不需要部署war包
+3. 提供约定的starter POM来简化Maven配置，让Maven的配置变得简单
+4. 自动化配置，根据项目的Maven依赖配置，springboot自动配置spring、springmvc等
+5. 提供了程序的健康检查功能
+6. 基本可以完全不使用xml配合文件，采用注解配置
 
 
 
